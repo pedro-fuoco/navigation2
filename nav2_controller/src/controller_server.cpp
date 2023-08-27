@@ -193,7 +193,7 @@ ControllerServer::on_configure(const rclcpp_lifecycle::State & /*state*/)
     "Controller Server has %s controllers available.", controller_ids_concat_.c_str());
 
   odom_sub_ = std::make_unique<nav_2d_utils::OdomSubscriber>(node);
-  vel_publisher_ = create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 1);
+  vel_publisher_ = std::make_unique<nav2_util::TwistPublisher>(node, "cmd_vel", 1);
 
   // Create the action server that we implement with our followPath method
   action_server_ = std::make_unique<ActionServer>(
@@ -568,9 +568,8 @@ void ControllerServer::updateGlobalPath()
 
 void ControllerServer::publishVelocity(const geometry_msgs::msg::TwistStamped & velocity)
 {
-  auto cmd_vel = std::make_unique<geometry_msgs::msg::Twist>(velocity.twist);
   if (vel_publisher_->is_activated() && vel_publisher_->get_subscription_count() > 0) {
-    vel_publisher_->publish(std::move(cmd_vel));
+    vel_publisher_->publish(velocity);
   }
 }
 

@@ -21,6 +21,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/twist.hpp"
+#include "geometry_msgs/msg/twist_stamped.hpp"
 
 #include "tf2/time.h"
 #include "tf2_ros/buffer.h"
@@ -95,6 +96,7 @@ protected:
    * @param msg Input cmd_vel message
    */
   void cmdVelInCallback(geometry_msgs::msg::Twist::ConstSharedPtr msg);
+  void cmdVelInCallbackStamped(geometry_msgs::msg::TwistStamped::ConstSharedPtr msg);
   /**
    * @brief Publishes output cmd_vel. If robot was stopped more than stop_pub_timeout_ seconds,
    * quit to publish 0-velocity.

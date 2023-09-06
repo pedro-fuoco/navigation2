@@ -73,7 +73,7 @@ Status AssistedTeleop::onRun(const std::shared_ptr<const AssistedTeleopAction::G
 
 void AssistedTeleop::onActionCompletion()
 {
-  teleop_twist_ = geometry_msgs::msg::Twist();
+  teleop_twist_ = geometry_msgs::msg::TwistStamped();
   preempt_teleop_ = false;
 }
 
@@ -114,11 +114,11 @@ Status AssistedTeleop::onCycleUpdate()
   projected_pose.y = current_pose.pose.position.y;
   projected_pose.theta = tf2::getYaw(current_pose.pose.orientation);
 
-  geometry_msgs::msg::Twist scaled_twist = teleop_twist_;
+  geometry_msgs::msg::TwistStamped scaled_twist = teleop_twist_;
   for (double time = simulation_time_step_; time < projection_time_;
     time += simulation_time_step_)
   {
-    projected_pose = projectPose(projected_pose, teleop_twist_, simulation_time_step_);
+    projected_pose = projectPose(projected_pose, teleop_twist_.twist, simulation_time_step_);
 
     if (!collision_checker_->isCollisionFree(projected_pose)) {
       if (time == simulation_time_step_) {
@@ -127,9 +127,9 @@ Status AssistedTeleop::onCycleUpdate()
           steady_clock_,
           1000,
           behavior_name_.c_str() << " collided on first time step, setting velocity to zero");
-        scaled_twist.linear.x = 0.0f;
-        scaled_twist.linear.y = 0.0f;
-        scaled_twist.angular.z = 0.0f;
+        scaled_twist.twist.linear.x = 0.0f;
+        scaled_twist.twist.linear.y = 0.0f;
+        scaled_twist.twist.angular.z = 0.0f;
         break;
       } else {
         RCLCPP_DEBUG_STREAM_THROTTLE(
@@ -138,9 +138,9 @@ Status AssistedTeleop::onCycleUpdate()
           1000,
           behavior_name_.c_str() << " collision approaching in " << time << " seconds");
         double scale_factor = time / projection_time_;
-        scaled_twist.linear.x *= scale_factor;
-        scaled_twist.linear.y *= scale_factor;
-        scaled_twist.angular.z *= scale_factor;
+        scaled_twist.twist.linear.x *= scale_factor;
+        scaled_twist.twist.linear.y *= scale_factor;
+        scaled_twist.twist.angular.z *= scale_factor;
         break;
       }
     }
@@ -172,7 +172,7 @@ geometry_msgs::msg::Pose2D AssistedTeleop::projectPose(
 
 void AssistedTeleop::teleopVelocityCallback(const geometry_msgs::msg::Twist::SharedPtr msg)
 {
-  teleop_twist_ = *msg;
+  teleop_twist_.twist = *msg;
 }
 
 void AssistedTeleop::preemptTeleopCallback(const std_msgs::msg::Empty::SharedPtr)

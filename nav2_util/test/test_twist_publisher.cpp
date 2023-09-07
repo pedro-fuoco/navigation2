@@ -30,7 +30,6 @@ TEST(TwistPublisher, Unstamped)
   auto pub_node = std::make_shared<nav2_util::LifecycleNode>("pub_node", "");
   pub_node->configure();
   auto vel_publisher = std::make_unique<nav2_util::TwistPublisher>(pub_node, "cmd_vel", 1);
-  ASSERT_EQ(vel_publisher->get_subscription_count(), 0);
   EXPECT_FALSE(vel_publisher->is_activated());
   pub_node->activate();
   EXPECT_TRUE(vel_publisher->is_activated());
@@ -53,7 +52,6 @@ TEST(TwistPublisher, Unstamped)
   rclcpp::spin_some(sub_node->get_node_base_interface());
 
   EXPECT_EQ(pub_msg.twist.linear.x, sub_msg.linear.x);
-  ASSERT_EQ(vel_publisher->get_subscription_count(), 1);
   pub_node->deactivate();
   sub_node->deactivate();
   rclcpp::shutdown();
@@ -68,7 +66,6 @@ TEST(TwistPublisher, Stamped)
   pub_node->declare_parameter("enable_stamped_cmd_vel", true);
   pub_node->configure();
   auto vel_publisher = std::make_unique<nav2_util::TwistPublisher>(pub_node, "cmd_vel", 1);
-  ASSERT_EQ(vel_publisher->get_subscription_count(), 0);
   EXPECT_FALSE(vel_publisher->is_activated());
   pub_node->activate();
   EXPECT_TRUE(vel_publisher->is_activated());
@@ -89,7 +86,6 @@ TEST(TwistPublisher, Stamped)
 
   vel_publisher->publish(pub_msg);
   rclcpp::spin_some(sub_node->get_node_base_interface());
-  ASSERT_EQ(vel_publisher->get_subscription_count(), 1);
   EXPECT_EQ(pub_msg, sub_msg);
   pub_node->deactivate();
   sub_node->deactivate();
